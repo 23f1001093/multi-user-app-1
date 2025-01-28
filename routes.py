@@ -22,13 +22,14 @@ def login_post():
 
 @app.route('/register', methods=['POST'])
 def register_post():
-    username = request.form.get('username')
+    email = request.form.get('email')
     password = request.form.get('password')
     confirm_password = request.form.get('confirm_password')
     qualification = request.form.get('qualification')
     dob = request.form.get('dob')
+    full_name = request.form.get('full_name')
     
-    if not username or not password or not confirm_password :
+    if not email or not password or not confirm_password:
         flash('Please fill out all required fields.')
         return redirect(url_for('register'))
     
@@ -36,17 +37,18 @@ def register_post():
         flash('Passwords do not match.')
         return redirect(url_for('register'))
     
-    user = User.query.filter_by(username = username).first()
+    user = User.query.filter_by(email = email).first()
     if user:
         flash('Email address already exists.')
         return redirect(url_for('register'))
     
     dob = datetime.strptime(dob, '%Y-%m-%d').date()
-
+    
     password_hash = generate_password_hash(password)
    
-    new_user = User(username=username, password=password_hash, qualification=qualification, dob=dob)
+    new_user = User(email=email, password=password_hash,qualification=qualification, dob=dob, full_name=full_name)
     db.session.add(new_user)
     db.session.commit()
+
     flash('Registration successful! Please log in.')
     return redirect(url_for('login'))
