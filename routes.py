@@ -1,12 +1,9 @@
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, session
 from app import app
-from models import db, User, Subject, Chapter, Quiz, Question, Option, Score
-from werkzeug.security import generate_password_hash
+from models import db, User, Subject, Chapter, Quiz, Question, Score
+from werkzeug.security import generate_password_hash , check_password_hash
 from datetime import datetime
-
-@app.route('/')
-def index():
-    return render_template('index.html')
+from functools import wraps
 
 @app.route('/login')
 def login():
@@ -18,8 +15,28 @@ def register():
 
 @app.route('/login', methods=['POST'])
 def login_post():
-    return 'Login post'
+    email = request.form.get('email')
+    password = request.form.get('password')
+    
+    if not email or not password:
+        flash('Please fill out all the required fields.')
+        return redirect(url_for('login'))
 
+    user = User.query.filter_by(email = email).first()
+    
+    if user is None :
+         flash('Username does not exist')
+         return redirect(url_for('login'))
+    
+    if not check_password_hash(user.password, password):
+        flash('Password is incorrect')
+        return redirect(url_for('login'))
+    
+    session['user_id'] = user.id
+    flash('Login successful!')
+    return redirect(url_for('index'))
+    
+  
 @app.route('/register', methods=['POST'])
 def register_post():
     email = request.form.get('email')
@@ -30,7 +47,7 @@ def register_post():
     full_name = request.form.get('full_name')
     
     if not email or not password or not confirm_password:
-        flash('Please fill out all required fields.')
+        flash('Please fill out all the required fields.')
         return redirect(url_for('register'))
     
     if password != confirm_password:
@@ -52,3 +69,30 @@ def register_post():
 
     flash('Registration successful! Please log in.')
     return redirect(url_for('login'))
+def auth_required(f):
+    @wraps(f)
+    def inner(*args, **kwargs):
+        if 'user_id' in session:
+           return f(*args, **kwargs)
+        else:
+            flash('Login to continue')
+            return redirect(url_for('login'))
+    return inner
+
+@app.route('/')
+@auth_required
+def index():
+    return render_template('index.html')
+   
+@app.route('/profile')
+@auth_required
+def profile():
+    user = User.query.get(session['user_id'])
+    return render_template('profile.html', user=user)
+   
+@app.route('/logout')
+def logout():
+    session.pop('user_id')
+    return redirect(url_for('login'))
+    
+    
