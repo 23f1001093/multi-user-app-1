@@ -1,0 +1,110 @@
+{% extends 'layout.html' %}
+{% block title %}
+     Admin Dashboard
+{% endblock %}
+
+{% block content %}
+<h1 class="display-1">Admin Dashboard</h1>
+
+
+<form action="{{ url_for('admin_search') }}" method="GET" class="d-flex mb-4">
+     <input class="form-control me-2" type="search" name="q" placeholder="Search users, subjects, quizzes" aria-label="Search">
+     <button class="btn btn-outline-success" type="submit">Search</button>
+</form>
+
+
+<a href="{{ url_for('add_subject' )}}" class="btn btn-success">
+     <i class="fas fa-plus"></i> Add 
+</a>
+
+
+<h2 class="display-4 mt-4">Subjects:</h2>
+<table class="table">
+     <thead>
+          <tr>
+               <th>Id</th>
+               <th>Name</th>
+               <th>Description</th>
+               <th># of Chapters</th>
+               <th>Actions</th>
+          </tr>
+     </thead>
+     <tbody>
+          {% for subject in subjects %}
+          <tr>
+               <td>{{ subject.id }}</td>
+               <td>{{ subject.name }}</td>
+               <td>{{ subject.description }}</td>
+               <td>{{ subject.chapters|length }}</td>
+               <td>
+                    <a href="{{ url_for('show_subject', id=subject.id) }}" class="btn btn-info">
+                         <i class="fas fa-book-open"></i> Chapters
+                    </a>
+                    <a href="{{ url_for('edit_subject', id=subject.id) }}" class="btn btn-primary">
+                         <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <a href="{{ url_for('delete_subject', id=subject.id) }}" class="btn btn-danger">
+                         <i class="fas fa-trash"></i> Delete
+                    </a>
+               </td>
+          </tr>
+          {% endfor %}
+     </tbody>
+</table>
+
+<h2 class="display-4 mt-5">Summary</h2>
+<table class="table table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>Category</th>
+            <th>Count</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Total no. of Users</td>
+            <td>{{ user_count }}</td>
+        </tr>
+        <tr>
+            <td>Total no. of Subjects</td>
+            <td>{{ subject_count }}</td>
+        </tr>
+        <tr>
+            <td>Total no. of Quizzes</td>
+            <td>{{ quiz_count }}</td>
+        </tr>
+        <tr>
+            <td>Total no. of Chapters</td>
+            <td>{{ chapter_count }}</td>
+        </tr>
+    </tbody>
+</table>
+
+
+<canvas id="summaryChart" width="400" height="200" class="mt-4"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+     var ctx = document.getElementById('summaryChart').getContext('2d');
+     var dataCounts = JSON.parse('{{ [user_count, subject_count, quiz_count, chapter_count] | tojson | safe }}');
+ 
+     var summaryChart = new Chart(ctx, {
+         type: 'bar',
+         data: {
+             labels: ['Users', 'Subjects', 'Quizzes', 'Chapters'],
+             datasets: [{
+                 label: 'Total Count',
+                 data: dataCounts,
+                 backgroundColor: ['blue', 'green', 'red', 'orange'],
+                 borderColor: ['black', 'black', 'black', 'black'],
+                 borderWidth: 1
+             }]
+         },
+         options: {
+             scales: {
+                 y: { beginAtZero: true }
+             }
+         }
+     });
+ </script>
+{% endblock %}

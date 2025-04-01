@@ -1,9 +1,61 @@
 {% extends 'layout.html' %}
-{% block title %}
-     Home Page
-{% endblock %}
+{% block title %}Home Page{% endblock %}
 
 {% block content %}
-<h1 >Home</h1>
-<p>Welcome to the home page</p>
+    <h1>Welcome, {{ user.full_name }}!</h1>
+    <p>Here's a quick overview:</p>
+
+    <h2>Available Quizzes</h2>
+    {% if quizzes %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Quiz Name</th>
+                        <th>Chapter</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for quiz in quizzes %}
+                        <tr>
+                            <td>{{ quiz.name }}</td>
+                            <td>{{ quiz.chapter.name }}</td>
+                            <td>{{ quiz.date_of_quiz }}</td>
+                            <td><a href="{{ url_for('take_quiz', quiz_id=quiz.id) }}" class="btn btn-sm btn-primary">Take Quiz</a></td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No quizzes available right now.</p>
+    {% endif %}
+
+    <h2>Your Recent Scores</h2>
+    {% if scores %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Quiz Name</th>
+                        <th>Score</th>
+                        <th>Date Taken</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for score in scores %}
+                        <tr>
+                            <td>{{ score.quiz.name }}</td>
+                            <td>{{ score.t_score }}</td>
+                            <td>{{ score.time_stamp_of_attempt }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>You haven't taken any quizzes yet.</p>
+    {% endif %}
 {% endblock %}

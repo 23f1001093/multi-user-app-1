@@ -1,0 +1,9 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h2>My Scores</h2>
+<ul>
+    {% for score in scores %}
+    <li>Quiz: {{ score.quiz_id }}, Score: {{ score.t_score }}, Date: {{ score.time_stamp_of_attempt }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}

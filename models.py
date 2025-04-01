@@ -26,17 +26,16 @@ class Subject(db.Model):
     name = db.Column(db.String(20),nullable = False)
     description = db.Column(db.String(180), nullable = False)
 
-    chapters = db.relationship('Chapter', backref="subject", lazy = True)
+    chapters = db.relationship('Chapter', backref="subject", lazy = True,cascade='all, delete')
 
 class Chapter(db.Model):
     __tablename__= 'chapter'
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String(20),nullable = False)
     description = db.Column(db.String(180), nullable = False)
-    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id'), nullable=False)
-   
-    quizzes = db.relationship('Quiz', backref="chapter", lazy = True)
+    subject_id = db.Column(db.Integer, db.ForeignKey('subject.id', ondelete='CASCADE'), nullable=False)
 
+    quizzes = db.relationship('Quiz', backref="chapter", lazy=True, cascade='all, delete-orphan')
     
 class Quiz(db.Model):
     __tablename__= 'quiz'
@@ -46,7 +45,7 @@ class Quiz(db.Model):
     date_of_quiz = db.Column(db.Date, nullable = False)
     time_duration = db.Column(db.Integer, nullable=False)
     remarks = db.Column(db.String(180))
-
+    
     questions = db.relationship('Question', backref="quiz", lazy = True)
     scores = db.relationship('Score', backref='quiz', lazy=True)
 
@@ -63,11 +62,12 @@ class Question(db.Model):
     correct_option = db.Column(db.String(10), nullable=False)
     
    
+   
 class Score(db.Model):
     __tablename__= 'score'
     id = db.Column(db.Integer, primary_key=True)
     t_score = db.Column(db.Integer, nullable=False)
-    quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id'), nullable=False)
+    quiz_id = db.Column(db.Integer, db.ForeignKey('quiz.id', ondelete="CASCADE"), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     time_stamp_of_attempt = db.Column(db.DateTime, nullable=False)
     
@@ -75,10 +75,9 @@ class Score(db.Model):
 with app.app_context():
     db.create_all()
    
-
     admin = User.query.filter_by(is_admin=True).first()
     if not admin:
         password_hash = generate_password_hash('admin')
-        admin = User(email='admin', password=password_hash, full_name='Admin', qualification = 'admin',dob=None,is_admin=True)
+        admin = User(email='admin@123', password=password_hash, full_name='Admin', qualification = 'admin',dob=None,is_admin=True)
         db.session.add(admin)
         db.session.commit() 

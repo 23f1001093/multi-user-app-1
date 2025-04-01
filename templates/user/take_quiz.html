@@ -1,0 +1,47 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Quiz Name: {{ quiz.name }}</h1>
+    <p>Chapter: {{ quiz.chapter.name }}</p>
+    <p>Time Duration: {{ quiz.time_duration }} minutes</p>
+
+    
+    <h3>Time Remaining: <span id="timer">{{ quiz.time_duration }}:00</span></h3>
+</div>
+
+<form id="quizForm" method="POST" action="{{ url_for('submit_quiz', quiz_id=quiz.id) }}">
+    {% for question in questions %}
+        <div class="mb-3">
+            <p><strong>{{ loop.index }}. {{ question.question_statement }}</strong></p>
+            <input type="radio" name="question_{{ question.id }}" value="{{ question.option1 }}" required> {{ question.option1 }}<br>
+            <input type="radio" name="question_{{ question.id }}" value="{{ question.option2 }}"> {{ question.option2 }}<br>
+            <input type="radio" name="question_{{ question.id }}" value="{{ question.option3 }}"> {{ question.option3 }}<br>
+            <input type="radio" name="question_{{ question.id }}" value="{{ question.option4 }}"> {{ question.option4 }}<br>
+        </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-primary">Submit Quiz</button>
+</form>
+
+<script>
+    let timeLeft = parseInt("{{ quiz.time_duration }}") * 60; 
+
+    function updateTimer() {
+        let minutes = Math.floor(timeLeft / 60);
+        let seconds = timeLeft % 60;
+        document.getElementById('timer').innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        
+        if (timeLeft > 0) {
+            timeLeft--;
+            setTimeout(updateTimer, 1000);
+        } else {
+            alert("Time is up! Submitting quiz...");
+            document.getElementById('quizForm').submit();  // Auto-submit the quiz
+        }
+    }
+
+    window.onload = function() {
+        updateTimer();
+    };
+</script>
+{% endblock %}
